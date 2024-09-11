@@ -1,115 +1,189 @@
-import Image from "next/image";
-import localFont from "next/font/local";
+import ConnectionWidget from "@/components/ConnectionWidget";
+import ServerWidget from "@/components/ServerWidget";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useEffect, useState } from "react";
+import bs58 from "bs58";
+import { Button3, DeleteButton } from "@/components/Buttons";
+import TwitterWidget from "@/components/TwitterWidget";
+import GradientBorder from "@/components/GradientBorder";
+import StyledInput from "@/components/StyledInput";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
-
+const messageText = "Sign in to xfollowx";
+const encodedMessage = bs58.encode(new TextEncoder().encode(messageText));
 export default function Home() {
-  return (
-    <div
-      className={`${geistSans.variable} ${geistMono.variable} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
-    >
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              pages/index.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const { connected, publicKey, signMessage } = useWallet();
+  const [signature, setSignature] = useState<string>("");
+  const [servers, setServers] = useState<any[]>([]);
+  const [user, setUser] = useState<any>();
+  const [addingTwitter, setAddingTwitter] = useState<boolean>(false);
+  const [discord, setDiscord] = useState<any>();
+  const [twitterAdding, setTwitterAdding] = useState<string>("");
+  useEffect(() => {
+    if (publicKey && signMessage && !signature) {
+      (async () => {
+        const item = localStorage.getItem(`xfollowx_signature_${publicKey.toString()}`);
+        if (item) {
+          setSignature(item);
+        } else {
+          const message = new TextEncoder().encode(messageText);
+          try {
+            const signature = bs58.encode(await signMessage(message));
+            localStorage.setItem(`xfollowx_signature_${publicKey.toString()}`, signature);
+            setSignature(signature);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      })();
+    }
+  }, [publicKey, signMessage, signature]);
+  useEffect(() => {
+    if (!publicKey || !signature) return;
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${publicKey.toString()}?pubkey=${publicKey.toString()}&signature=${signature}&message=${encodedMessage}`).then(async (response) => {
+      const json = await response.json();
+      setServers(json.servers || []);
+      setUser({
+        wallet: json.wallet,
+        discord: json.discord,
+        twitters: json.twitters,
+      });
+    });
+  }, [publicKey, signature]);
+  useEffect(() => {
+    const discord = sessionStorage.getItem("discord");
+    if (discord) {
+      setDiscord(JSON.parse(discord));
+    }
+  }, []);
+  useEffect(() => {
+    if (discord && publicKey && user) {
+      if (discord.id !== user.discordId) {
+        fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${publicKey.toString()}/discord`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              discord_id: discord.id,
+              discord_name: discord.global_name,
+              pubkey: publicKey.toString(),
+              signature,
+              message: encodedMessage
+            }),
+          }
+        );
+        setUser({ ...user, discordId: discord.id, discordName: discord.global_name });
+      }
+      // do somethong
+    }
+  }, [discord, publicKey, user]);
+  const connectDiscord = async () => {
+    let redirect = `${process.env.NEXT_PUBLIC_REDIRECT_URL}/_auth`;
+    const url = `https://discord.com/oauth2/authorize?client_id=1283409803833507890&response_type=code&redirect_uri=${redirect}&scope=identify`;
+    window.open(url, "_blank")?.focus();
+  };
+  const createServer = async () => {
+    if (!publicKey) return;
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/server`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pubkey: publicKey.toString(),
+          signature,
+          message: encodedMessage,
+        })
+      }
+    );
+    const json = await response.json();
+    setServers(servers => [...servers, json]);
+  };
+  const addTwitter = async () => {
+    if (!twitterAdding || !publicKey) return;
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${publicKey.toString()}/twitter/add`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          twitter: twitterAdding,
+          pubkey: publicKey.toString(),
+          signature,
+          message: encodedMessage,
+        })
+      }
+    );
+    if (response.status === 200) {
+      setUser((user: any) => {
+        return { ...user, twitters: [...user.twitters, twitterAdding] };
+      });
+    }
+  };
+  const removeTwitter = async (twitter: string) => {
+    if (!publicKey) return;
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${publicKey.toString()}/twitter/remove`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          twitter,
+          pubkey: publicKey.toString(),
+          signature,
+          message: encodedMessage,
+        })
+      }
+    );
+    if (response.status === 200) {
+      setUser((user: any) => {
+        return { ...user, twitters: user.twitters.filter((t: any) => t !== twitter) };
+      });
+    }
+  };
+  if (!connected) {
+    return (
+      <p>Connect your wallet</p>
+    );
+  } else {
+    return (
+      <div className="flex flex-col items-center justify-start mt-4 relative gap-4">
+        {addingTwitter &&
+          <div className="absolute inset-0 flex items-center justify-center z-50">
+            <GradientBorder>
+              <div className="flex flex-col justify-center items-center p-4 gap-4">
+                <p>Enter your twitter username</p>
+                <StyledInput
+                  placeholder="@..."
+                  type="text"
+                  value={twitterAdding}
+                  onChange={(event: any) => setTwitterAdding(event.target.value)}
+                />
+                <div className="flex flex-row justify-center items-center gap-2">
+                  <Button3 onClick={addTwitter} text="Add" disabled={!twitterAdding} />
+                  <DeleteButton onClick={() => setAddingTwitter(false)} text="Cancel" />
+                </div>
+              </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            </GradientBorder>
+          </div>
+        }
+
+        <div className="flex flex-col justify-center items-center gap-4 w-[60%]">
+          <p>Your Account</p>
+          <ConnectionWidget text={user?.discordName} icon="/discord.png" connected={!!user?.discordName} onConnect={connectDiscord} onDisconnect={() => null} canDisconnect />
+          <p>Your servers</p>
+          <div className="grid grid-cols-5 place-items-center items-center gap-2">
+            {servers.map((server, i) => (
+              <ServerWidget {...server} key={i} />
+            ))}
+          </div>
+          <Button3 onClick={createServer} text="Create Server" />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+        <p>Your connected X accounts:</p>
+        <div className="grid grid-cols-6 place-items-center items-center mb-2">
+          {user?.twitters.map((twitter: string) => (
+            <TwitterWidget username={twitter} />
+          ))}
+        </div>
+        <Button3 onClick={() => setAddingTwitter(true)} text="Add Twitter" />
+      </div>
+    );
+  }
 }

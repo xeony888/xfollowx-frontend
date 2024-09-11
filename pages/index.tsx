@@ -42,10 +42,13 @@ export default function Home() {
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${publicKey.toString()}?pubkey=${publicKey.toString()}&signature=${signature}&message=${encodedMessage}`).then(async (response) => {
       const json = await response.json();
       setServers(json.servers || []);
+      console.log(json);
       setUser({
         wallet: json.wallet,
         discord: json.discord,
         twitters: json.twitters,
+        discordName: json.discordName,
+        discordId: json.discordId
       });
     });
   }, [publicKey, signature]);
@@ -143,7 +146,7 @@ export default function Home() {
     );
   } else {
     return (
-      <div className="flex flex-col items-center justify-start mt-4 relative gap-4">
+      <div className="flex flex-col items-center justify-start mt-4 relative gap-4 px-2">
         {addingTwitter &&
           <div className="absolute inset-0 flex items-center justify-center z-50">
             <GradientBorder>
@@ -165,11 +168,11 @@ export default function Home() {
           </div>
         }
 
-        <div className="flex flex-col justify-center items-center gap-4 w-[60%]">
+        <div className="flex flex-col justify-center items-center gap-4 md:w-[60%]">
           <p>Your Account</p>
-          <ConnectionWidget text={user?.discordName} icon="/discord.png" connected={!!user?.discordName} onConnect={connectDiscord} onDisconnect={() => null} canDisconnect />
+          <ConnectionWidget text={user?.discordName} icon="/discord.png" connected={user?.discordName} onConnect={connectDiscord} onDisconnect={() => null} canDisconnect />
           <p>Your servers</p>
-          <div className="grid grid-cols-5 place-items-center items-center gap-2">
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center items-center">
             {servers.map((server, i) => (
               <ServerWidget {...server} key={i} />
             ))}
@@ -177,9 +180,9 @@ export default function Home() {
           <Button3 onClick={createServer} text="Create Server" />
         </div>
         <p>Your connected X accounts:</p>
-        <div className="grid grid-cols-6 place-items-center items-center mb-2">
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 place-items-center items-center mb-2">
           {user?.twitters.map((twitter: string) => (
-            <TwitterWidget username={twitter} />
+            <TwitterWidget username={twitter} onClick={() => removeTwitter(twitter)} />
           ))}
         </div>
         <Button3 onClick={() => setAddingTwitter(true)} text="Add Twitter" />

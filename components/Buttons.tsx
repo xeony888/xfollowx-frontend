@@ -8,6 +8,8 @@ type ButtonProps = {
     disabledText?: string;
     disabledHoverText?: string;
     questionText?: string;
+    onMouseEnter?: (...t: any[]) => void;
+    onMouseLeave?: (...t: any[]) => void;
 };
 
 
@@ -70,7 +72,7 @@ export function DeleteButton({ text, onClick, disabled, disabledText }: ButtonPr
     }
 }
 
-export function Button3({ text, onClick, disabled, disabledText, disabledHoverText, questionText }: ButtonProps) {
+export function Button3({ text, onClick, disabled, disabledText, disabledHoverText, questionText, onMouseEnter, onMouseLeave }: ButtonProps) {
     const [hoverQuestion, setHoverQuestion] = useState<boolean>(false);
     const [hoverButton, setHoverButton] = useState<boolean>(false);
     const onMouseEnterButton = () => {
@@ -124,6 +126,8 @@ export function Button3({ text, onClick, disabled, disabledText, disabledHoverTe
             active:brightness-90
             text-shadow-[0px_1px_0px_rgba(102,54,38,1)] relative"
                 onClick={onClick}
+                onMouseEnter={onMouseEnter}
+                onMouseLeave={onMouseLeave}
             >
                 {text}
                 {questionText &&

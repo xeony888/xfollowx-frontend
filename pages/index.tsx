@@ -7,6 +7,10 @@ import { Button3, DeleteButton } from "@/components/Buttons";
 import TwitterWidget from "@/components/TwitterWidget";
 import GradientBorder from "@/components/GradientBorder";
 import StyledInput from "@/components/StyledInput";
+import TransactionSuccess from "@/components/TransactionSuccess";
+import TransactionFailure from "@/components/TransactionFailure";
+import TransactionPending from "@/components/TransactionPending";
+import { pay } from "@/components/chain";
 
 const messageText = "Sign in to xfollowx";
 const encodedMessage = bs58.encode(new TextEncoder().encode(messageText));
@@ -18,6 +22,9 @@ export default function Home() {
   const [addingTwitter, setAddingTwitter] = useState<boolean>(false);
   const [discord, setDiscord] = useState<any>();
   const [twitterAdding, setTwitterAdding] = useState<string>("");
+  const [succeededTransaction, setSucceededTransaction] = useState<boolean>(false);
+  const [failedTransaction, setFailedTransaction] = useState<boolean>(false);
+  const [sendingTransaction, setSendingTransaction] = useState<boolean>(false);
   useEffect(() => {
     if (publicKey && signMessage && !signature) {
       (async () => {
@@ -140,13 +147,59 @@ export default function Home() {
       });
     }
   };
+  const buySolana = async (id: number, amount: number) => {
+    if (!publicKey) return;
+    try {
+      setSendingTransaction(true);
+      const tx = await pay(id, amount, publicKey);
+      console.log(tx);
+      setSucceededTransaction(true);
+      // now set the server to say that we have bought solana
+      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/server/${id}/set`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pubkey: publicKey.toString(),
+            signature,
+            message: encodedMessage,
+            type: "chain"
+          })
+        }
+      );
+    } catch (e) {
+      console.error(e);
+      setFailedTransaction(true);
+    } finally {
+      setSendingTransaction(false);
+      setTimeout(() => {
+        setFailedTransaction(false);
+        setSucceededTransaction(false);
+      }, 5000);
+    }
+  };
   if (!connected) {
     return (
       <p>Connect your wallet</p>
     );
   } else {
     return (
-      <div className="flex flex-col items-center justify-start mt-4 relative gap-4 px-2">
+      <div className="flex flex-col items-center justify-start mt-4 relative gap-4 px-2 w-full">
+        {succeededTransaction &&
+          <div className="fixed bottom-0 left-0 ml-6 mb-6">
+            <TransactionSuccess />
+          </div>
+        }
+        {failedTransaction &&
+          <div className="fixed bottom-0 left-0 ml-6 mb-6">
+            <TransactionFailure />
+          </div>
+        }
+        {sendingTransaction &&
+          <div className="fixed bottom-0 left-0 ml-6 mb-6">
+            <TransactionPending />
+          </div>
+        }
         {addingTwitter &&
           <div className="absolute inset-0 flex items-center justify-center z-50">
             <GradientBorder>
@@ -163,23 +216,22 @@ export default function Home() {
                   <DeleteButton onClick={() => setAddingTwitter(false)} text="Cancel" />
                 </div>
               </div>
-
             </GradientBorder>
           </div>
         }
 
-        <div className="flex flex-col justify-center items-center gap-4 md:w-[60%]">
-          <p>Your Account</p>
+        <div className="flex flex-col justify-center items-center gap-4 w-[80%]">
+          <p>Your Discord (required to use the app)</p>
           <ConnectionWidget text={user?.discordName} icon="/discord.png" connected={user?.discordName} onConnect={connectDiscord} onDisconnect={() => null} canDisconnect />
           <p>Your servers</p>
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 place-items-center items-center gap-2">
             {servers.map((server, i) => (
-              <ServerWidget {...server} key={i} />
+              <ServerWidget id={server.id} subscription={server.subscription} buySolana={(amount: number) => buySolana(server.id, amount)} key={i} />
             ))}
           </div>
           <Button3 onClick={createServer} text="Create Server" />
         </div>
-        <p>Your connected X accounts:</p>
+        <p>Your connected X accounts (these will be shared with others in the servers you are in)</p>
         <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 place-items-center items-center mb-2">
           {user?.twitters.map((twitter: string) => (
             <TwitterWidget username={twitter} onClick={() => removeTwitter(twitter)} />

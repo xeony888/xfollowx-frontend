@@ -2,6 +2,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { shortenAddress } from './utils';
+import { Button3 } from './Buttons';
 
 export const WalletMultiButton = dynamic(
     async () => (await import('@solana/wallet-adapter-react-ui')).WalletMultiButton,
@@ -26,9 +27,7 @@ export default function WalletButton() {
             <div id="click" style={{ display: "none" }}>
                 <WalletMultiButton />
             </div>
-            <button className="hover:opacity-80 flex flex-row gap-2 justify-center items-cente text-white bg-yellow-500 py-2 px-4" onClick={action} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-                <p>{connected ? `${hover ? "Disconnect" : shortenAddress(publicKey?.toString() || "")}` : "Connect Wallet"}</p>
-            </button>
+            <Button3 onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} text={connected ? `${hover ? "Disconnect" : shortenAddress(publicKey?.toString() || "")}` : "Connect Wallet"} onClick={action} />
         </>
     );
 }

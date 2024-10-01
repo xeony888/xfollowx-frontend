@@ -27,7 +27,7 @@ export default function Auth() {
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     }
-                });
+                }); //
                 const json = await response.json();
                 console.log(json);
                 const access = json.access_token;

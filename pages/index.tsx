@@ -62,7 +62,7 @@ export default function Home() {
           setPaidStatus(new Date() > result.until ? "EXPIRED" : "FUTURE");
         }
       });
-    }
+    } //
   }, [user]);
   const connectDiscord = async () => {
     let redirect = `${process.env.NEXT_PUBLIC_REDIRECT_URL}/_auth`;

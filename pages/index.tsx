@@ -65,8 +65,8 @@ export default function Home() {
     }
   }, [user]);
   const connectDiscord = async () => {
-    let redirect = `${process.env.NEXT_PUBLIC_REDIRECT_URL}/_auth`;
-    const url = `https://discord.com/oauth2/authorize?client_id=1283409803833507890&response_type=code&redirect_uri=${redirect}&scope=identify`;
+    const url = process.env.NEXT_PUBLIC_REDIRECT_URL;
+    console.log(url);
     window.open(url, "_blank")?.focus();
   };
   const createServer = async () => {

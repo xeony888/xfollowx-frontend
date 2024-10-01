@@ -1,7 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-const CLIENT_ID = "1283409803833507890";
 
 export default function Auth() {
     const router = useRouter();
@@ -9,9 +8,11 @@ export default function Auth() {
     useEffect(() => {
         if (!router.isReady) return;
         (async () => {
+            const CLIENT_ID = process.env.NEXT_PUBLIC_CLIENT_ID!;
             const code = router.query.code;
             if (code) {
                 const REDIRECT_URL = `${process.env.NEXT_PUBLIC_MINI_REDIRECT_URL}/_auth`;
+                console.log(REDIRECT_URL);
                 const formData = new URLSearchParams({
                     client_id: CLIENT_ID,
                     client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET!,

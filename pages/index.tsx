@@ -47,6 +47,7 @@ export default function Home() {
     const access = sessionStorage.getItem("discord_access_token");
     const refresh = sessionStorage.getItem("discord_refresh_token");
     if (discord) {
+      console.log({ discord: JSON.parse(discord), access, refresh });
       setDiscord(JSON.parse(discord));
       setAccessToken(access!);
       setRefreshToken(refresh!);

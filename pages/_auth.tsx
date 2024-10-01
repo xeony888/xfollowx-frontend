@@ -41,9 +41,9 @@ export default function Auth() {
                 );
                 console.log(userInfo.data);
                 setError("");
-                window.sessionStorage.setItem("discord", JSON.stringify(userInfo.data));
-                window.sessionStorage.setItem("discord_access_token", access);
-                window.sessionStorage.setItem("discord_refresh_token", refresh);
+                sessionStorage.setItem("discord", JSON.stringify(userInfo.data));
+                sessionStorage.setItem("discord_access_token", access);
+                sessionStorage.setItem("discord_refresh_token", refresh);
                 window.location.href = "/";
             } else {
                 setError("error");

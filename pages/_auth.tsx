@@ -11,7 +11,7 @@ export default function Auth() {
         (async () => {
             const code = router.query.code;
             if (code) {
-                const REDIRECT_URL = `${process.env.NEXT_PUBLIC_REDIRECT_URL}/_auth`;
+                const REDIRECT_URL = `${process.env.NEXT_PUBLIC_MINI_REDIRECT_URL}/_auth`;
                 const formData = new URLSearchParams({
                     client_id: CLIENT_ID,
                     client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET!,

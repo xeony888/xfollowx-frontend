@@ -1,10 +1,8 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import url from "url";
 const CLIENT_ID = "1283409803833507890";
 
-let ran = 0;
 export default function Auth() {
     const router = useRouter();
     const [error, setError] = useState("");
@@ -31,6 +29,7 @@ export default function Auth() {
                 );
                 if (output.data) {
                     const access = output.data.access_token;
+                    const refresh = output.data.refresh_token;
                     const userInfo = await axios.get("https://discord.com/api/v10/users/@me",
                         {
                             headers: {
@@ -41,6 +40,8 @@ export default function Auth() {
                     console.log(userInfo.data);
                     setError("");
                     window.sessionStorage.setItem("discord", JSON.stringify(userInfo.data));
+                    window.sessionStorage.setItem("discord_access_token", access);
+                    window.sessionStorage.setItem("discord_refresh_token", refresh);
                     window.location.href = "/";
                 }
             } else {

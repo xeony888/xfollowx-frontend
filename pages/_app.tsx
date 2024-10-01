@@ -5,6 +5,7 @@ import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { useMemo } from "react";
 import NavBar from "@/components/NavBar";
 import Wrapper from "@/components/Wrapper";
+import Footer from "@/components/Footer";
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -17,6 +18,7 @@ export default function App({ Component, pageProps }: AppProps) {
           <Wrapper>
             <NavBar />
             <Component {...pageProps} />
+            <Footer />
           </Wrapper>
         </WalletModalProvider>
       </WalletProvider>

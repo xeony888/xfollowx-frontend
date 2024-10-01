@@ -42,7 +42,14 @@ export function GreenButton({ text, onClick, disabled, disabledText }: ButtonPro
         );
     }
 }
-export function DeleteButton({ text, onClick, disabled, disabledText }: ButtonProps) {
+export function DeleteButton({ text, onClick, disabled, disabledHoverText, disabledText }: ButtonProps) {
+    const [hoverButton, setHoverButton] = useState<boolean>(false);
+    const onMouseEnterButton = () => {
+        setHoverButton(true);
+    };
+    const onMouseLeaveButton = () => {
+        setHoverButton(false);
+    };
     if (disabled) {
         return (
             <button
@@ -57,6 +64,8 @@ export function DeleteButton({ text, onClick, disabled, disabledText }: ButtonPr
     } else {
         return (
             <button
+                onMouseEnter={onMouseEnterButton}
+                onMouseLeave={onMouseLeaveButton}
                 className="w-full cursor-pointer text-white text-base py-2 px-6 text-center transition duration-200 ease-in-out 
             shadow-[inset_0px_-3px_7px_0px_rgba(255, 0, 0, 1)] 
             bg-gradient-to-b from-red-800 to-red-500
@@ -66,7 +75,7 @@ export function DeleteButton({ text, onClick, disabled, disabledText }: ButtonPr
             text-shadow-[0px_1px_0px_rgba(102,54,38,1)]"
                 onClick={onClick}
             >
-                {text}
+                {hoverButton ? disabledHoverText || text : text}
             </button>
         );
     }
@@ -121,7 +130,7 @@ export function Button3({ text, onClick, disabled, disabledText, disabledHoverTe
                 className="w-full cursor-pointer text-white text-base py-2 px-6 text-center transition duration-200 ease-in-out 
             shadow-[inset_0px_-3px_7px_0px_rgba(250,204,21,1)] 
             bg-gradient-to-b from-secondary-dark to-primary-dark 
-            rounded-[3px] border border-black 
+            rounded-[3px]
             hover:bg-gradient-to-b hover:from-primary-dark hover:to-secondary-dark 
             active:brightness-90
             text-shadow-[0px_1px_0px_rgba(102,54,38,1)] relative"

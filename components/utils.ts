@@ -11,3 +11,13 @@ export function toDDMMYYYY(date: Date) {
     return formattedDate;
 }
 export type SubscriptionType = "CHAIN" | "STRIPE" | "UNDEFINED";
+
+export function parseDate(date: Date): string {
+    // Get month, day, and year parts of the date
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based, so we add 1
+    const day = date.getDate().toString().padStart(2, '0');
+    const year = date.getFullYear();
+
+    // Return the formatted date string
+    return `${month}/${day}/${year}`;
+}

@@ -32,6 +32,7 @@ export default function Home() {
     if (!discord || !accessToken) return;
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${discord.id}?access=${accessToken}&discordId=${discord.id}&discordName=${discord.global_name}`).then(async (response) => {
       const json = await response.json();
+      console.log({ json });
       setUser({
         wallet: json.wallet,
         discord: json.discord,
@@ -176,7 +177,7 @@ export default function Home() {
       }
       <p className="text-5xl mt-10 font-bold"><span className="text-yellow-500">X</span>Connect</p>
       <p className="mb-20">To create an account, complete the below steps</p>
-      <div className="flex flex-row justify-center items-center gap-2">
+      <div className="flex flex-col md:flex-row justify-center items-center gap-10 md:gap-2">
         <ActionComponent
           img="/discord.png"
           title="Login with Discord"
@@ -194,8 +195,8 @@ export default function Home() {
           hoverText="Remove Twitter"
         />
       </div>
-      <p className="mt-5">To add the bot to your server, complete the below steps</p>
-      <div className="grid grid-cols-3 place-items-center items-center gap-4 mt-20 mb-5">
+      <p className="mt-5 text-center">To add the bot to your server, complete the below steps</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-center items-center gap-10 md:gap-4 mt-10 mb-5">
         <ActionComponent
           img="/discord.png"
           title="Add Bot to Server"

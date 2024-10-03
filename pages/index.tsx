@@ -226,10 +226,10 @@ export default function Home() {
             <div className="flex flex-col justify-center items-center p-4 gap-4">
               <p>Enter your twitter username</p>
               <StyledInput
-                placeholder="@..."
+                placeholder="Your X handle"
                 type="text"
                 value={twitterAdding}
-                onChange={(event: any) => setTwitterAdding(event.target.value)}
+                onChange={(event: any) => setTwitterAdding(`@${event.target.value}`)}
               />
               <div className="flex flex-row justify-center items-center gap-2">
                 <Button3 onClick={addTwitter} text="Add" disabled={!twitterAdding} />

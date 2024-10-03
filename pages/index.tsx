@@ -228,8 +228,8 @@ export default function Home() {
               <StyledInput
                 placeholder="Your X handle"
                 type="text"
-                value={twitterAdding}
-                onChange={(event: any) => setTwitterAdding(`@${event.target.value}`)}
+                value={`@${twitterAdding}`}
+                onChange={(event: any) => setTwitterAdding(event.target.value)}
               />
               <div className="flex flex-row justify-center items-center gap-2">
                 <Button3 onClick={addTwitter} text="Add" disabled={!twitterAdding} />

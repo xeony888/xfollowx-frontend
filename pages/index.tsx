@@ -188,7 +188,7 @@ export default function Home() {
         <ActionComponent
           img="/x.png"
           title="Connect X"
-          buttonText={user && user.twitter ? `@${user.twitter}` : "Connect"}
+          buttonText={user && user.twitter ? user.twitter : "Connect"}
           onAction={() => setAddingTwitter(true)}
           reverse={user && user.twitter}
           reverseAction={removeTwitter}
@@ -228,7 +228,7 @@ export default function Home() {
               <StyledInput
                 placeholder="Your X handle"
                 type="text"
-                value={`@${twitterAdding}`}
+                value={`@${twitterAdding.trim().replaceAll("@", "")}`}
                 onChange={(event: any) => setTwitterAdding(event.target.value)}
               />
               <div className="flex flex-row justify-center items-center gap-2">

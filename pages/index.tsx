@@ -1,6 +1,5 @@
 import { useWallet } from "@solana/wallet-adapter-react";
-import { useEffect, useState } from "react";
-import bs58 from "bs58";
+import React, { useEffect, useState } from "react";
 import TransactionSuccess from "@/components/TransactionSuccess";
 import TransactionFailure from "@/components/TransactionFailure";
 import TransactionPending from "@/components/TransactionPending";
@@ -11,6 +10,7 @@ import GradientBorder from "@/components/GradientBorder";
 import StyledInput from "@/components/StyledInput";
 import WalletButton from "@/components/WalletButton";
 import { parseDate } from "@/components/utils";
+import Toggle from "@/components/Toggle";
 
 type PaidStatus = "NEVER" | "FUTURE" | "EXPIRED";
 export default function Home() {
@@ -24,6 +24,7 @@ export default function Home() {
   const [sendingTransaction, setSendingTransaction] = useState<boolean>(false);
   const [accessToken, setAccessToken] = useState<string>();
   const [refreshToken, setRefreshToken] = useState<string>();
+  const [showAdminElements, setShowAdminElements] = useState<boolean>(false);
   const [until, setUntil] = useState<any>();
   const [buyingSolana, setBuyingSolana] = useState<boolean>(false);
   const [daysBought, setDaysBought] = useState<number>(0);
@@ -159,7 +160,7 @@ export default function Home() {
     }
   };
   return (
-    <div className="flex flex-col justify-start items-center w-full bg-[#1E1E1E]">
+    <div className="flex flex-col justify-start gap-4 items-center w-full bg-[#1E1E1E]">
       {succeededTransaction &&
         <div className="fixed bottom-0 left-0 ml-6 mb-6">
           <TransactionSuccess />
@@ -195,31 +196,37 @@ export default function Home() {
           hoverText="Remove Twitter"
         />
       </div>
-      <p className="mt-5 text-center">To add the bot to your server, complete the below steps</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-center items-center gap-10 md:gap-4 mt-10 mb-5">
-        <ActionComponent
-          img="/discord.png"
-          title="Add Bot to Server"
-          buttonText="Add"
-          onAction={() => window.open("https://discord.com/oauth2/authorize?client_id=1283409803833507890", "_blank")}
-        />
-        <ActionComponent
-          img="/key.png"
-          title="Generate Key"
-          buttonText={user && user.server ? `Server ID: ${user.server.id}` : "Generate"}
-          onAction={createServer}
-          disabled={user && user.server}
-        />
-        <ActionComponent
-          img="/wallet.png"
-          title="Subscribe"
-          buttonText={paidStatus === "NEVER" ? "Pay" : `Paid until ${parseDate(until)}`}
-          disabled={paidStatus === "FUTURE"}
-          onAction={() => setBuyingSolana(true)}
-          reverse={paidStatus === "EXPIRED"}
-          reverseAction={() => setBuyingSolana(true)}
-        />
-      </div>
+      <p>For server admins</p>
+      <Toggle checked={showAdminElements} onChange={setShowAdminElements} />
+      {showAdminElements &&
+        <>
+          <p className="mt-5 text-center">To add the bot to your server, complete the below steps</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-center items-center gap-10 md:gap-4 mt-10 mb-5">
+            <ActionComponent
+              img="/discord.png"
+              title="Add Bot to Server"
+              buttonText="Add"
+              onAction={() => window.open("https://discord.com/oauth2/authorize?client_id=1283409803833507890", "_blank")}
+            />
+            <ActionComponent
+              img="/key.png"
+              title="Generate Key"
+              buttonText={user && user.server ? `Server ID: ${user.server.id}` : "Generate"}
+              onAction={createServer}
+              disabled={user && user.server}
+            />
+            <ActionComponent
+              img="/wallet.png"
+              title="Subscribe"
+              buttonText={paidStatus === "NEVER" ? "Pay" : `Paid until ${parseDate(until)}`}
+              disabled={paidStatus === "FUTURE"}
+              onAction={() => setBuyingSolana(true)}
+              reverse={paidStatus === "EXPIRED"}
+              reverseAction={() => setBuyingSolana(true)}
+            />
+          </div>
+        </>
+      }
       {addingTwitter &&
         <div className="absolute inset-0 flex items-center justify-center z-50">
           <GradientBorder>

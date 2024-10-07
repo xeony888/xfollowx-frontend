@@ -13,7 +13,14 @@ type ButtonProps = {
 };
 
 
-export function GreenButton({ text, onClick, disabled, disabledText }: ButtonProps) {
+export function GreenButton({ text, onClick, disabled, disabledText, disabledHoverText }: ButtonProps) {
+    const [hoverButton, setHoverButton] = useState<boolean>(false);
+    const onMouseEnterButton = () => {
+        setHoverButton(true);
+    };
+    const onMouseLeaveButton = () => {
+        setHoverButton(false);
+    };
     if (disabled) {
         return (
             <button
@@ -28,6 +35,8 @@ export function GreenButton({ text, onClick, disabled, disabledText }: ButtonPro
     } else {
         return (
             <button
+                onMouseEnter={onMouseEnterButton}
+                onMouseLeave={onMouseLeaveButton}
                 className="w-full cursor-pointer text-white text-base py-2 px-6 text-center transition duration-200 ease-in-out 
             shadow-[inset_0px_-3px_7px_0px_rgba(0, 255, 0, 1)] 
             bg-gradient-to-b from-green-800 to-green-500 
@@ -37,7 +46,7 @@ export function GreenButton({ text, onClick, disabled, disabledText }: ButtonPro
             text-shadow-[0px_1px_0px_rgba(102,54,38,1)]"
                 onClick={onClick}
             >
-                {text}
+                {hoverButton ? disabledHoverText || text : text}
             </button>
         );
     }

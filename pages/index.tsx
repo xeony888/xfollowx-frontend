@@ -229,7 +229,7 @@ export default function Home() {
               img="/wallet.png"
               title="Subscribe"
               buttonText={paidStatus === "NEVER" ? "Pay" : `Paid until ${parseDate(until)}`}
-              disabled={paidStatus === "FUTURE"}
+              hoverText={paidStatus === "FUTURE" ? "Buy More" : "Pay"}
               onAction={() => setBuyingSolana(true)}
               reverse={paidStatus === "EXPIRED"}
               reverseAction={() => setBuyingSolana(true)}

@@ -11,6 +11,7 @@ import StyledInput from "@/components/StyledInput";
 import WalletButton from "@/components/WalletButton";
 import { parseDate } from "@/components/utils";
 import Toggle from "@/components/Toggle";
+import DropdownActionComponent from "@/components/DropdownActionComponent";
 
 type PaidStatus = "NEVER" | "FUTURE" | "EXPIRED";
 export default function Home() {
@@ -18,6 +19,8 @@ export default function Home() {
   const [user, setUser] = useState<any>();
   const [addingTwitter, setAddingTwitter] = useState<boolean>(false);
   const [discord, setDiscord] = useState<any>();
+  const [servers, setServers] = useState<number[]>([]);
+  const [selectedServer, setSelectedServer] = useState<number>();
   const [twitterAdding, setTwitterAdding] = useState<string>("");
   const [succeededTransaction, setSucceededTransaction] = useState<boolean>(false);
   const [failedTransaction, setFailedTransaction] = useState<boolean>(false);
@@ -33,17 +36,28 @@ export default function Home() {
     if (!discord || !accessToken) return;
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${discord.id}?access=${accessToken}&discordId=${discord.id}&discordName=${discord.global_name}`).then(async (response) => {
       const json = await response.json();
-      console.log({ json });
       setUser({
         wallet: json.wallet,
         discord: json.discord,
         twitter: json.twitter,
         discordName: json.discordName,
         discordId: json.discordId,
-        server: json.server
       });
+      setServers(json.servers?.map((server: any) => server.id) ?? []);
     });
   }, [discord, accessToken]);
+  useEffect(() => {
+    if (selectedServer !== undefined && selectedServer !== null) {
+      getPaymentData(selectedServer).then((result) => {
+        setUntil(result?.until);
+        if (!result) {
+          setPaidStatus("NEVER");
+        } else {
+          setPaidStatus(new Date() > result.until ? "EXPIRED" : "FUTURE");
+        }
+      });
+    }
+  }, [selectedServer]);
   useEffect(() => {
     const discord = sessionStorage.getItem("discord");
     const access = sessionStorage.getItem("discord_access_token");
@@ -55,18 +69,6 @@ export default function Home() {
       setRefreshToken(refresh!);
     }
   }, []);
-  useEffect(() => {
-    if (user && user.server) {
-      getPaymentData(user.server.id).then((result) => {
-        setUntil(result?.until);
-        if (!result) {
-          setPaidStatus("NEVER");
-        } else {
-          setPaidStatus(new Date() > result.until ? "EXPIRED" : "FUTURE");
-        }
-      });
-    }
-  }, [user]);
   const connectDiscord = async () => {
     const url = process.env.NEXT_PUBLIC_REDIRECT_URL;
     console.log(url);
@@ -85,7 +87,7 @@ export default function Home() {
       }
     );
     const json = await response.json();
-    setUser({ ...user, server: json.server });
+    setServers([...servers, json.id]);
   };
   const addTwitter = async () => {
     if (!twitterAdding || !user || !accessToken) return;
@@ -208,13 +210,21 @@ export default function Home() {
               buttonText="Add"
               onAction={() => window.open("https://discord.com/oauth2/authorize?client_id=1283409803833507890", "_blank")}
             />
-            <ActionComponent
+            <DropdownActionComponent
+              img="/key.png"
+              title="Manage Servers"
+              options={servers}
+              onChange={(n: number) => setSelectedServer(n)}
+              action={createServer}
+              actionText="Create Server"
+            />
+            {/* <ActionComponent
               img="/key.png"
               title="Generate Key"
               buttonText={user && user.server ? `Server ID: ${user.server.id}` : "Generate"}
               onAction={createServer}
               disabled={user && user.server}
-            />
+            /> */}
             <ActionComponent
               img="/wallet.png"
               title="Subscribe"

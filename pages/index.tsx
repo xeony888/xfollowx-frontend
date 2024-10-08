@@ -9,7 +9,7 @@ import { Button3, DeleteButton } from "@/components/Buttons";
 import GradientBorder from "@/components/GradientBorder";
 import StyledInput from "@/components/StyledInput";
 import WalletButton from "@/components/WalletButton";
-import { parseDate } from "@/components/utils";
+import { parseDate, toDDMMYYYY } from "@/components/utils";
 import Toggle from "@/components/Toggle";
 import DropdownActionComponent from "@/components/DropdownActionComponent";
 
@@ -20,7 +20,7 @@ export default function Home() {
   const [addingTwitter, setAddingTwitter] = useState<boolean>(false);
   const [discord, setDiscord] = useState<any>();
   const [servers, setServers] = useState<number[]>([]);
-  const [selectedServer, setSelectedServer] = useState<number>();
+  const [selectedServer, setSelectedServer] = useState<any>();
   const [twitterAdding, setTwitterAdding] = useState<string>("");
   const [succeededTransaction, setSucceededTransaction] = useState<boolean>(false);
   const [failedTransaction, setFailedTransaction] = useState<boolean>(false);
@@ -43,12 +43,13 @@ export default function Home() {
         discordName: json.discordName,
         discordId: json.discordId,
       });
-      setServers(json.servers?.map((server: any) => server.id) ?? []);
+      console.log(json);
+      setServers(json.servers || []);
     });
   }, [discord, accessToken]);
   useEffect(() => {
     if (selectedServer !== undefined && selectedServer !== null) {
-      getPaymentData(selectedServer).then((result) => {
+      getPaymentData(selectedServer.id).then((result) => {
         setUntil(result?.until);
         if (!result) {
           setPaidStatus("NEVER");
@@ -63,7 +64,6 @@ export default function Home() {
     const access = sessionStorage.getItem("discord_access_token");
     const refresh = sessionStorage.getItem("discord_refresh_token");
     if (discord) {
-      console.log({ discord: JSON.parse(discord), access, refresh });
       setDiscord(JSON.parse(discord));
       setAccessToken(access!);
       setRefreshToken(refresh!);
@@ -76,6 +76,7 @@ export default function Home() {
   };
   const createServer = async () => {
     if (!user || !accessToken) return;
+    console.log("here");
     const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/server`,
       {
         method: "POST",
@@ -87,7 +88,7 @@ export default function Home() {
       }
     );
     const json = await response.json();
-    setServers([...servers, json.id]);
+    setServers([...servers, json]);
   };
   const addTwitter = async () => {
     if (!twitterAdding || !user || !accessToken) return;
@@ -184,18 +185,26 @@ export default function Home() {
         <ActionComponent
           img="/discord.png"
           title="Login with Discord"
-          buttonText={user ? user.discordName : "Login"}
-          disabled={!!user}
-          onAction={connectDiscord}
+          normal={!user}
+          normalText="Login"
+          normalAction={connectDiscord}
+          success={!!user}
+          successText={user?.discordName}
+          failure={false}
+          failureText=""
         />
         <ActionComponent
           img="/x.png"
           title="Connect X"
-          buttonText={user && user.twitter ? user.twitter : "Connect"}
-          onAction={() => setAddingTwitter(true)}
-          reverse={user && user.twitter}
-          reverseAction={removeTwitter}
-          hoverText="Remove Twitter"
+          normal={user && !user.twitter}
+          normalText="Connect"
+          normalAction={() => setAddingTwitter(true)}
+          success={user && user.twitter}
+          successText={user?.twitter}
+          hoverSuccessText="Change Twitter"
+          successAction={() => setAddingTwitter(true)}
+          failure={false}
+          failureText=""
         />
       </div>
       <p>For server admins</p>
@@ -207,8 +216,13 @@ export default function Home() {
             <ActionComponent
               img="/discord.png"
               title="Add Bot to Server"
-              buttonText="Add"
-              onAction={() => window.open("https://discord.com/oauth2/authorize?client_id=1283409803833507890", "_blank")}
+              success={false}
+              successText=""
+              normal={true}
+              normalText="Add"
+              normalAction={() => window.open("https://discord.com/oauth2/authorize?client_id=1283409803833507890", "_blank")}
+              failure={false}
+              failureText=""
             />
             <DropdownActionComponent
               img="/key.png"
@@ -218,21 +232,19 @@ export default function Home() {
               action={createServer}
               actionText="Create Server"
             />
-            {/* <ActionComponent
-              img="/key.png"
-              title="Generate Key"
-              buttonText={user && user.server ? `Server ID: ${user.server.id}` : "Generate"}
-              onAction={createServer}
-              disabled={user && user.server}
-            /> */}
             <ActionComponent
               img="/wallet.png"
               title="Subscribe"
-              buttonText={paidStatus === "NEVER" ? "Pay" : `Paid until ${parseDate(until)}`}
-              hoverText={paidStatus === "FUTURE" ? "Buy More" : "Pay"}
-              onAction={() => setBuyingSolana(true)}
-              reverse={paidStatus === "EXPIRED"}
-              reverseAction={() => setBuyingSolana(true)}
+              success={paidStatus === "FUTURE"}
+              successText={`Paid until ${toDDMMYYYY(until)}`}
+              hoverSuccessText="Buy More"
+              successAction={() => setBuyingSolana(true)}
+              normal={paidStatus === "NEVER"}
+              normalText="Pay"
+              normalAction={() => setBuyingSolana(true)}
+              failure={paidStatus === "EXPIRED"}
+              failureText="Pay"
+              failureAction={() => setBuyingSolana(true)}
             />
           </div>
         </>

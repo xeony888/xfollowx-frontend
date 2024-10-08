@@ -5,13 +5,13 @@ type DropdownActionComponentProps = {
     img: string;
     title: string;
     onChange: (n: number) => void;
-    options: number[];
+    options: any[];
     action: () => void;
     actionText: string;
 };
 export default function DropdownActionComponent({ img, title, options, onChange, action, actionText }: DropdownActionComponentProps) {
     const [isOpen, setIsOpen] = useState<boolean>(false);
-    const [selected, setSelected] = useState<number>(options[0]);
+    const [selected, setSelected] = useState<number>(options[0]?.id);
     const swap = () => {
         if (Number.isNaN(Number(selected))) {
             action();
@@ -19,8 +19,8 @@ export default function DropdownActionComponent({ img, title, options, onChange,
             setIsOpen(!isOpen);
         }
     };
-    const change = (n: number) => {
-        setSelected(n);
+    const change = (n: any) => {
+        setSelected(n.id);
         onChange(n);
     };
     return (
@@ -36,7 +36,7 @@ export default function DropdownActionComponent({ img, title, options, onChange,
                         {options.filter((option) => option !== selected).map((option, i) => {
                             return (
                                 <div className="w-full" key={i}>
-                                    <Button3 onClick={() => change(option)} text={String(option)} />
+                                    <Button3 onClick={() => change(option)} text={`${option.id} ${option.connectedDiscordServerName ? `connected to ${option.connectedDiscordServerName}` : "not connected"}`} />
                                 </div>
                             );
                         })}

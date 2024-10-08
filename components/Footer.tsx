@@ -5,7 +5,7 @@ export default function Footer() {
         <div className="bg-[#161616] flex flex-col justify-center items-center w-full px-10">
             <div className="flex flex-row justify-between items-center w-full py-6">
                 <div className="flex flex-row justify-center items-center gap-10">
-                    <img src="/logo.png" className="w-8 md:w-10 lg:w-16" />
+                    <img src="/Xconnect.png" className="w-8 md:w-10 lg:w-16" />
                     <p className="text-xs md:text-base">Whitepaper</p>
                 </div>
                 <div className="flex flex-row justify-center items-center gap-5">

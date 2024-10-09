@@ -19,7 +19,7 @@ export default function Home() {
   const [user, setUser] = useState<any>();
   const [addingTwitter, setAddingTwitter] = useState<boolean>(false);
   const [discord, setDiscord] = useState<any>();
-  const [servers, setServers] = useState<number[]>([]);
+  const [servers, setServers] = useState<any[]>([]);
   const [selectedServer, setSelectedServer] = useState<any>();
   const [twitterAdding, setTwitterAdding] = useState<string>("");
   const [succeededTransaction, setSucceededTransaction] = useState<boolean>(false);
@@ -212,8 +212,8 @@ export default function Home() {
       {showAdminElements &&
         <>
           <p className="mt-5 text-center">To add the bot to your server, complete the below steps</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-center items-center gap-10 md:gap-4 mt-10 mb-5">
-            <ActionComponent
+          <div className="grid grid-cols-1 place-items-center items-center gap-10 md:gap-4 mt-10 mb-5">
+            {/* <ActionComponent
               img="/discord.png"
               title="Add Bot to Server"
               success={false}
@@ -223,16 +223,15 @@ export default function Home() {
               normalAction={() => window.open("https://discord.com/oauth2/authorize?client_id=1283409803833507890", "_blank")}
               failure={false}
               failureText=""
-            />
+            /> */}
             <DropdownActionComponent
               img="/key.png"
               title="Manage Servers"
               options={servers}
               onChange={(n: number) => setSelectedServer(n)}
               action={createServer}
-              actionText="Create Server"
             />
-            <ActionComponent
+            {/* <ActionComponent
               img="/wallet.png"
               title="Subscribe"
               success={paidStatus === "FUTURE"}
@@ -245,7 +244,7 @@ export default function Home() {
               failure={paidStatus === "EXPIRED"}
               failureText="Pay"
               failureAction={() => setBuyingSolana(true)}
-            />
+            /> */}
           </div>
         </>
       }

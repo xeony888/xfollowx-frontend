@@ -29,7 +29,7 @@ export function GreenButton({ text, onClick, disabled, disabledText, disabledHov
                 className="w-full cursor-pointer text-white text-base py-2 px-6 text-center transition duration-200 ease-in-out 
         shadow-[inset_0px_-3px_7px_0px_rgba(0, 255, 0, 1)] 
         bg-gradient-to-b from-green-800 to-green-500 
-        rounded-[3px] border border-black 
+        rounded-[3px]
         active:brightness-90
         text-shadow-[0px_1px_0px_rgba(102,54,38,1)]"
                 onClick={onClick}
@@ -45,7 +45,7 @@ export function GreenButton({ text, onClick, disabled, disabledText, disabledHov
                 className="w-full cursor-pointer text-white text-base py-2 px-6 text-center transition duration-200 ease-in-out 
             shadow-[inset_0px_-3px_7px_0px_rgba(0, 255, 0, 1)] 
             bg-gradient-to-b from-green-800 to-green-500 
-            rounded-[3px] border border-black 
+            rounded-[3px]
             hover:bg-gradient-to-b hover:from-green-500 hover:to-green-800
             active:brightness-90
             text-shadow-[0px_1px_0px_rgba(102,54,38,1)]"
@@ -72,7 +72,7 @@ export function DeleteButton({ text, onClick, disabled, disabledHoverText, disab
                 className="w-full cursor-pointer text-white text-base py-2 px-6 text-center transition duration-200 ease-in-out 
         shadow-[inset_0px_-3px_7px_0px_rgba(255, 0, 0, 1)] 
         bg-gradient-to-b from-red-800 to-red-500
-        rounded-[3px] border border-black
+        rounded-[3px]
         active:brightness-90
         text-shadow-[0px_1px_0px_rgba(102,54,38,1)]"
                 onClick={onClick}
@@ -88,7 +88,7 @@ export function DeleteButton({ text, onClick, disabled, disabledHoverText, disab
                 className="w-full cursor-pointer text-white text-base py-2 px-6 text-center transition duration-200 ease-in-out 
             shadow-[inset_0px_-3px_7px_0px_rgba(255, 0, 0, 1)] 
             bg-gradient-to-b from-red-800 to-red-500
-            rounded-[3px] border border-black 
+            rounded-[3px]
             hover:bg-gradient-to-b hover:from-red-500 hover:to-red-800 
             active:brightness-90
             text-shadow-[0px_1px_0px_rgba(102,54,38,1)]"

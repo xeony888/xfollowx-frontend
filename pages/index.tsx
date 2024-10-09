@@ -28,7 +28,7 @@ export default function Home() {
   const [accessToken, setAccessToken] = useState<string>();
   const [refreshToken, setRefreshToken] = useState<string>();
   const [showAdminElements, setShowAdminElements] = useState<boolean>(false);
-  const [until, setUntil] = useState<any>();
+  const [until, setUntil] = useState<Date | undefined>();
   const [buyingSolana, setBuyingSolana] = useState<boolean>(false);
   const [daysBought, setDaysBought] = useState<number>(0);
   const [paidStatus, setPaidStatus] = useState<PaidStatus>("NEVER");
@@ -236,7 +236,7 @@ export default function Home() {
               img="/wallet.png"
               title="Subscribe"
               success={paidStatus === "FUTURE"}
-              successText={`Paid until ${toDDMMYYYY(until)}`}
+              successText={`Paid until ${toDDMMYYYY(until || new Date())}`}
               hoverSuccessText="Buy More"
               successAction={() => setBuyingSolana(true)}
               normal={paidStatus === "NEVER"}

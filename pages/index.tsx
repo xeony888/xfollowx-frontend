@@ -9,7 +9,6 @@ import { Button3, DeleteButton } from "@/components/Buttons";
 import GradientBorder from "@/components/GradientBorder";
 import StyledInput from "@/components/StyledInput";
 import WalletButton from "@/components/WalletButton";
-import { parseDate, toDDMMYYYY } from "@/components/utils";
 import Toggle from "@/components/Toggle";
 import DropdownActionComponent from "@/components/DropdownActionComponent";
 
@@ -31,7 +30,7 @@ export default function Home() {
   const [until, setUntil] = useState<Date | undefined>();
   const [buyingSolana, setBuyingSolana] = useState<boolean>(false);
   const [daysBought, setDaysBought] = useState<number>(0);
-  const [paidStatus, setPaidStatus] = useState<PaidStatus>("NEVER");
+  const [paid, setPaid] = useState<boolean>(false);
   useEffect(() => {
     if (!discord || !accessToken) return;
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${discord.id}?access=${accessToken}&discordId=${discord.id}&discordName=${discord.global_name}`).then(async (response) => {
@@ -49,14 +48,21 @@ export default function Home() {
   }, [discord, accessToken]);
   useEffect(() => {
     if (selectedServer !== undefined && selectedServer !== null) {
-      getPaymentData(selectedServer.id).then((result) => {
-        setUntil(result?.until);
-        if (!result) {
-          setPaidStatus("NEVER");
-        } else {
-          setPaidStatus(new Date() > result.until ? "EXPIRED" : "FUTURE");
-        }
-      });
+      (async () => {
+        // add caching maybe
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/server/${selectedServer.id}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              discordId: user.discordId,
+              access: accessToken
+            })
+          }
+        );
+        const json = await response.json();
+        setPaid(json.subscribed);
+      })();
     }
   }, [selectedServer]);
   useEffect(() => {
@@ -230,6 +236,7 @@ export default function Home() {
               options={servers}
               onChange={(n: number) => setSelectedServer(n)}
               action={createServer}
+              paid={paid}
             />
             {/* <ActionComponent
               img="/wallet.png"

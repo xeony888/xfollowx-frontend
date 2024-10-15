@@ -133,7 +133,7 @@ export function Button3({ text, onClick, disabled, disabledText, disabledHoverTe
     } else {
         return (
             <button
-                className="relative w-full cursor-pointer text-white text-base py-2 px-6 bg-primary-dark hover:bg-primary-light"
+                className="relative w-full cursor-pointer text-white text-base py-2 px-6 bg-primary-dark hover:brightness-95 active:brightness-75"
                 onClick={onClick}
                 onMouseEnter={onMouseEnter}
                 onMouseLeave={onMouseLeave}

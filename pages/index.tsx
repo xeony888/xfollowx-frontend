@@ -33,7 +33,7 @@ export default function Home() {
   const [paid, setPaid] = useState<boolean>(false);
   useEffect(() => {
     if (!discord || !accessToken) return;
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${discord.id}?access=${accessToken}&discordId=${discord.id}&discordName=${discord.global_name}`).then(async (response) => {
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${discord.id}?access=${accessToken}&discordId=${discord.id}&discordName=${discord.username}`).then(async (response) => {
       const json = await response.json();
       setUser({
         wallet: json.wallet,
@@ -42,11 +42,11 @@ export default function Home() {
         discordName: json.discordName,
         discordId: json.discordId,
       });
-      console.log(json);
       setServers(json.servers || []);
     });
   }, [discord, accessToken]);
   useEffect(() => {
+    console.log(selectedServer);
     if (selectedServer !== undefined && selectedServer !== null) {
       (async () => {
         // add caching maybe
@@ -61,6 +61,7 @@ export default function Home() {
           }
         );
         const json = await response.json();
+        console.log(json);
         setPaid(json.subscribed);
       })();
     }

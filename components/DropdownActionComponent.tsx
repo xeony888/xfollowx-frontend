@@ -15,10 +15,8 @@ export default function DropdownActionComponent({ img, title, paid, options, onC
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [selected, setSelected] = useState<any>(options[0]);
     useEffect(() => {
-        if (selected) {
-
-        }
-    }, [selected]);
+        onChange(options[0]);
+    }, []);
     const swap = () => {
         if (!selected) {
             action();
@@ -32,6 +30,9 @@ export default function DropdownActionComponent({ img, title, paid, options, onC
     };
     const visit = () => {
         window.open(LINK, "_blank");
+    };
+    const copy = async () => {
+        await navigator.clipboard.writeText(selected?.id);
     };
     return (
         <div className="relative w-[600px] bg-[#373739] flex flex-col gap-4 justify-center items-center pt-14 pb-2 px-2">
@@ -47,11 +48,12 @@ export default function DropdownActionComponent({ img, title, paid, options, onC
                     <div className="flex flex-col justify-center items-center gap-2">
                         <p>Click <span className="underline hover:cursor-pointer" onClick={visit}>here</span> to pay</p>
                         <p>You'll have to connect your discord and enter your server id (shown below)</p>
+                        <Button3 onClick={copy} text="Copy Server ID" />
                     </div>
             }
             <div className="w-full relative">
                 <button
-                    className="relative w-full cursor-pointer text-white text-base py-2 px-6 bg-primary-dark hover:bg-primary-light"
+                    className="relative w-full cursor-pointer text-white text-base py-2 px-6 bg-primary-dark hover:brightness-95 active:brightness-75"
                     onClick={swap}
                     style={{ textShadow: "2px 2px 4px gray" }}
                 >

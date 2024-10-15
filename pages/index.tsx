@@ -11,27 +11,28 @@ import StyledInput from "@/components/StyledInput";
 import WalletButton from "@/components/WalletButton";
 import Toggle from "@/components/Toggle";
 import DropdownActionComponent from "@/components/DropdownActionComponent";
+import { useRouter } from "next/router";
 
 type PaidStatus = "NEVER" | "FUTURE" | "EXPIRED";
 export default function Home() {
-  const { publicKey } = useWallet();
   const [user, setUser] = useState<any>();
   const [addingTwitter, setAddingTwitter] = useState<boolean>(false);
   const [discord, setDiscord] = useState<any>();
   const [servers, setServers] = useState<any[]>([]);
   const [selectedServer, setSelectedServer] = useState<any>();
   const [twitterAdding, setTwitterAdding] = useState<string>("");
-  const [succeededTransaction, setSucceededTransaction] = useState<boolean>(false);
-  const [failedTransaction, setFailedTransaction] = useState<boolean>(false);
-  const [sendingTransaction, setSendingTransaction] = useState<boolean>(false);
   const [accessToken, setAccessToken] = useState<string>();
   const [refreshToken, setRefreshToken] = useState<string>();
   const [showAdminElements, setShowAdminElements] = useState<boolean>(false);
-  const [until, setUntil] = useState<Date | undefined>();
-  const [buyingSolana, setBuyingSolana] = useState<boolean>(false);
-  const [daysBought, setDaysBought] = useState<number>(0);
   const [paid, setPaid] = useState<boolean>(false);
   const [connected, setConnected] = useState<boolean>(false);
+  const router = useRouter();
+  useEffect(() => {
+    if (router && router.isReady) {
+      const { owner } = router.query;
+      setShowAdminElements(owner === "true");
+    }
+  }, [router, router.isReady]);
   useEffect(() => {
     if (!discord || !accessToken) return;
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${discord.id}?access=${accessToken}&discordId=${discord.id}&discordName=${discord.username}`).then(async (response) => {
@@ -62,9 +63,8 @@ export default function Home() {
           }
         );
         const json = await response.json();
-        console.log(json);
         setPaid(json.subscribed);
-
+        setConnected(Boolean(json.connectedDiscordServerName));
       })();
     }
   }, [selectedServer]);
@@ -85,7 +85,6 @@ export default function Home() {
   };
   const createServer = async () => {
     if (!user || !accessToken) return;
-    console.log("here");
     const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/server`,
       {
         method: "POST",
@@ -97,7 +96,7 @@ export default function Home() {
       }
     );
     const json = await response.json();
-    setServers([...servers, json]);
+    setServers(servers => [...servers, json]);
   };
   const addTwitter = async () => {
     if (!twitterAdding || !user || !accessToken) return;
@@ -137,57 +136,18 @@ export default function Home() {
       });
     }
   };
-  const buySolana = async () => {
-    if (!publicKey || !user || !user.server || !accessToken) return;
-    try {
-      setSendingTransaction(true);
-      const days = daysBought * 86400;
-      const tx = await pay(user.server.id, days, publicKey);
-      console.log(tx);
-      setSucceededTransaction(true);
-      const n = new Date(Date.now() + days);
-      setUntil(n);
-      // now set the server to say that we have bought solana
-      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/server/${user.server.id}/set`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            access: accessToken,
-            discordId: user.discordId,
-            type: "chain"
-          })
-        }
-      );
-      setBuyingSolana(false);
-    } catch (e) {
-      console.error(e);
-      setFailedTransaction(true);
-    } finally {
-      setSendingTransaction(false);
-      setTimeout(() => {
-        setFailedTransaction(false);
-        setSucceededTransaction(false);
-      }, 5000);
-    }
+  const toggle = (b: boolean) => {
+    router.push({
+      pathname: router.pathname,
+      query: {
+        ...router.query,
+        owner: b.toString(), // convert boolean to string since query params are strings
+      },
+    });
+    setShowAdminElements(b);
   };
   return (
     <div className="flex flex-col justify-start gap-4 items-center w-full bg-[#1E1E1E]">
-      {succeededTransaction &&
-        <div className="fixed bottom-0 left-0 ml-6 mb-6">
-          <TransactionSuccess />
-        </div>
-      }
-      {failedTransaction &&
-        <div className="fixed bottom-0 left-0 ml-6 mb-6">
-          <TransactionFailure />
-        </div>
-      }
-      {sendingTransaction &&
-        <div className="fixed bottom-0 left-0 ml-6 mb-6">
-          <TransactionPending />
-        </div>
-      }
       <p className="text-5xl mt-10 font-bold"><span className="text-yellow-500">X</span>Connect</p>
       <p className="mb-20">To create an account, complete the below steps</p>
       <div className="flex flex-col md:flex-row justify-center items-center gap-10 md:gap-2">
@@ -216,7 +176,7 @@ export default function Home() {
         />
       </div>
       <p>For server admins</p>
-      <Toggle checked={showAdminElements} onChange={setShowAdminElements} />
+      <Toggle checked={showAdminElements} onChange={toggle} />
       {showAdminElements &&
         <>
           <p className="mt-5 text-center">To add the bot to your server, complete the below steps</p>
@@ -272,26 +232,6 @@ export default function Home() {
               <div className="flex flex-row justify-center items-center gap-2">
                 <Button3 onClick={addTwitter} text="Add" disabled={!twitterAdding} />
                 <DeleteButton onClick={() => setAddingTwitter(false)} text="Cancel" />
-              </div>
-            </div>
-          </GradientBorder>
-        </div>
-      }
-      {buyingSolana &&
-        <div className="absolute inset-0 flex items-center justify-center z-50">
-          <GradientBorder>
-            <div className="flex flex-col justify-center items-center p-4 gap-4">
-              <p>Days to buy</p>
-              <StyledInput
-                placeholder="Days..."
-                type="text"
-                value={daysBought}
-                onChange={(event: any) => setDaysBought(Number(event.target.value))}
-              />
-              <div className="flex flex-row justify-center items-center gap-2">
-                <Button3 onClick={buySolana} text="Buy" disabled={!publicKey} />
-                <WalletButton />
-                <DeleteButton onClick={() => setBuyingSolana(false)} text="Cancel" />
               </div>
             </div>
           </GradientBorder>

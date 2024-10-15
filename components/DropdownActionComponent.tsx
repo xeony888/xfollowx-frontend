@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button3 } from "./Buttons";
+import { Button3, DeleteButton } from "./Buttons";
 import React from "react";
 
 type DropdownActionComponentProps = {
@@ -19,9 +19,12 @@ export default function DropdownActionComponent({ img, title, paid, connected, o
     const [selected, setSelected] = useState<any>(options[0]);
     useEffect(() => {
         onChange(options[0]);
+        setSelected(options[0]);
     }, []);
     const swap = () => {
-        if (!selected) {
+
+        if (!selected && !options) {
+            console.log("action");
             action();
         } else {
             setIsOpen(!isOpen);
@@ -30,6 +33,7 @@ export default function DropdownActionComponent({ img, title, paid, connected, o
     const change = (n: any) => {
         setSelected(n);
         onChange(n);
+        setIsOpen(false);
     };
     const visit = () => {
         window.open(LINK, "_blank");
@@ -48,23 +52,28 @@ export default function DropdownActionComponent({ img, title, paid, connected, o
             <p className="font-bold">{title}</p>
             {!selected ? <></>
                 :
-                <>
+
+                <div className="flex flex-col justify-center items-center gap-2">
                     {
                         paid ?
                             <p>This server is paid for</p>
                             :
-                            <div className="flex flex-col justify-center items-center gap-2">
+                            <>
                                 <p>Click <span className="underline hover:cursor-pointer font-bold text-primary-dark" onClick={visit}>here</span> to pay</p>
                                 <p>You'll have to connect your discord and enter your server id (shown below)</p>
-                                <Button3 onClick={copy} text="Copy Server ID" />
-                            </div>
+                            </>
                     }
                     {connected ?
-                        <p>This server is connected</p>
+                        <p>This server is connected to {selected.connectedDiscordServerName}</p>
                         :
-                        <p>Click <span className="underline hover:cursor-pointer font-bold text-primary-dark" onClick={visit2} >here</span> to add the bot to a guild</p>
+                        <p>Click <span className="underline hover:cursor-pointer font-bold text-primary-dark" onClick={visit2} >here</span> to add the bot to a discord server</p>
                     }
-                </>
+                    <div className="flex flex-row justify-center items-center gap-2 w-full">
+                        <Button3 onClick={copy} text="Copy Server ID" />
+                        <DeleteButton onClick={() => window.location.reload()} text="Reload" />
+                    </div>
+                </div>
+
             }
             <div className="w-full relative">
                 <button

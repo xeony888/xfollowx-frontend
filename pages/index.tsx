@@ -196,7 +196,7 @@ export default function Home() {
           success={user && user.twitter}
           successText={user?.twitter}
           hoverSuccessText="Change Twitter"
-          successAction={() => setAddingTwitter(true)}
+          successAction={addTwitter}
           failure={false}
           failureText=""
         />

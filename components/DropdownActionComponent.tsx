@@ -11,7 +11,7 @@ type DropdownActionComponentProps = {
     options: any[];
     action: () => void;
 };
-//
+
 const LINK = "https://app.hel.io/s/670a6f12cc50d45bfb6e101f";
 const DISCORD_LINK = "https://discord.com/oauth2/authorize?client_id=1283409803833507890";
 export default function DropdownActionComponent({ img, title, paid, connected, options, onChange, action }: DropdownActionComponentProps) {
@@ -52,7 +52,6 @@ export default function DropdownActionComponent({ img, title, paid, connected, o
             <p className="font-bold">{title}</p>
             {!selected ? <></>
                 :
-
                 <div className="flex flex-col justify-center items-center gap-2">
                     {
                         paid ?
@@ -60,7 +59,7 @@ export default function DropdownActionComponent({ img, title, paid, connected, o
                             :
                             <>
                                 <p>Click <span className="underline hover:cursor-pointer font-bold text-primary-dark" onClick={visit}>here</span> to pay</p>
-                                <p>You'll have to connect your discord and enter your server id (shown below)</p>
+                                <p>(You'll have to connect your discord and enter your server id)</p>
                             </>
                     }
                     {connected ?

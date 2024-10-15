@@ -6,12 +6,14 @@ type DropdownActionComponentProps = {
     img: string;
     title: string;
     paid: boolean;
+    connected: boolean;
     onChange: (n: number) => void;
     options: any[];
     action: () => void;
 };
 const LINK = "https://app.hel.io/s/670a6f12cc50d45bfb6e101f";
-export default function DropdownActionComponent({ img, title, paid, options, onChange, action }: DropdownActionComponentProps) {
+const DISCORD_LINK = "https://discord.com/oauth2/authorize?client_id=1283409803833507890";
+export default function DropdownActionComponent({ img, title, paid, connected, options, onChange, action }: DropdownActionComponentProps) {
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [selected, setSelected] = useState<any>(options[0]);
     useEffect(() => {
@@ -34,6 +36,9 @@ export default function DropdownActionComponent({ img, title, paid, options, onC
     const copy = async () => {
         await navigator.clipboard.writeText(selected?.id);
     };
+    const visit2 = () => {
+        window.open(DISCORD_LINK, "_blank");
+    };
     return (
         <div className="relative w-[600px] bg-[#373739] flex flex-col gap-4 justify-center items-center pt-14 pb-2 px-2">
             <div className="absolute w-20 h-20 rounded-full flex justify-center items-center bg-[#6D654E] left-[50%] top-0 -translate-x-[50%] -translate-y-[50%]">
@@ -42,14 +47,23 @@ export default function DropdownActionComponent({ img, title, paid, options, onC
             <p className="font-bold">{title}</p>
             {!selected ? <></>
                 :
-                paid ?
-                    <p>This server is paid for</p>
-                    :
-                    <div className="flex flex-col justify-center items-center gap-2">
-                        <p>Click <span className="underline hover:cursor-pointer" onClick={visit}>here</span> to pay</p>
-                        <p>You'll have to connect your discord and enter your server id (shown below)</p>
-                        <Button3 onClick={copy} text="Copy Server ID" />
-                    </div>
+                <>
+                    {
+                        paid ?
+                            <p>This server is paid for</p>
+                            :
+                            <div className="flex flex-col justify-center items-center gap-2">
+                                <p>Click <span className="underline hover:cursor-pointer font-bold text-primary-dark" onClick={visit}>here</span> to pay</p>
+                                <p>You'll have to connect your discord and enter your server id (shown below)</p>
+                                <Button3 onClick={copy} text="Copy Server ID" />
+                            </div>
+                    }
+                    {connected ?
+                        <p>This server is connected</p>
+                        :
+                        <p>Click <span className="underline hover:cursor-pointer font-bold text-primary-dark" onClick={visit2} >here</span> to add the bot to a guild</p>
+                    }
+                </>
             }
             <div className="w-full relative">
                 <button

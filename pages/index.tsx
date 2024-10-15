@@ -31,6 +31,7 @@ export default function Home() {
   const [buyingSolana, setBuyingSolana] = useState<boolean>(false);
   const [daysBought, setDaysBought] = useState<number>(0);
   const [paid, setPaid] = useState<boolean>(false);
+  const [connected, setConnected] = useState<boolean>(false);
   useEffect(() => {
     if (!discord || !accessToken) return;
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${discord.id}?access=${accessToken}&discordId=${discord.id}&discordName=${discord.username}`).then(async (response) => {
@@ -63,6 +64,7 @@ export default function Home() {
         const json = await response.json();
         console.log(json);
         setPaid(json.subscribed);
+
       })();
     }
   }, [selectedServer]);
@@ -192,7 +194,6 @@ export default function Home() {
         <ActionComponent
           img="/discord.png"
           title="Login with Discord"
-          normal={!user}
           normalText="Login"
           normalAction={connectDiscord}
           success={!!user}
@@ -203,7 +204,6 @@ export default function Home() {
         <ActionComponent
           img="/x.png"
           title="Connect X"
-          normal={user && !user.twitter}
           normalText="Connect"
           normalAction={() => setAddingTwitter(true)}
           success={user && user.twitter}
@@ -238,6 +238,7 @@ export default function Home() {
               onChange={(n: number) => setSelectedServer(n)}
               action={createServer}
               paid={paid}
+              connected={connected}
             />
             {/* <ActionComponent
               img="/wallet.png"

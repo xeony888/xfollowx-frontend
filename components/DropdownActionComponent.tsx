@@ -11,6 +11,7 @@ type DropdownActionComponentProps = {
     options: any[];
     action: () => void;
 };
+//
 const LINK = "https://app.hel.io/s/670a6f12cc50d45bfb6e101f";
 const DISCORD_LINK = "https://discord.com/oauth2/authorize?client_id=1283409803833507890";
 export default function DropdownActionComponent({ img, title, paid, connected, options, onChange, action }: DropdownActionComponentProps) {

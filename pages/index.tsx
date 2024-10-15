@@ -198,6 +198,7 @@ export default function Home() {
           normalAction={connectDiscord}
           success={!!user}
           successText={user?.discordName}
+          successAction={() => null}
           failure={false}
           failureText=""
         />

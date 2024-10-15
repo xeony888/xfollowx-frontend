@@ -1,17 +1,12 @@
-import { useWallet } from "@solana/wallet-adapter-react";
 import React, { useEffect, useState } from "react";
-import TransactionSuccess from "@/components/TransactionSuccess";
-import TransactionFailure from "@/components/TransactionFailure";
-import TransactionPending from "@/components/TransactionPending";
-import { getPaymentData, pay } from "@/components/chain";
 import ActionComponent from "@/components/ActionComponent";
 import { Button3, DeleteButton } from "@/components/Buttons";
 import GradientBorder from "@/components/GradientBorder";
 import StyledInput from "@/components/StyledInput";
-import WalletButton from "@/components/WalletButton";
 import Toggle from "@/components/Toggle";
 import DropdownActionComponent from "@/components/DropdownActionComponent";
 import { useRouter } from "next/router";
+import { redirect } from "next/dist/server/api-utils";
 
 type PaidStatus = "NEVER" | "FUTURE" | "EXPIRED";
 export default function Home() {
@@ -30,7 +25,31 @@ export default function Home() {
   useEffect(() => {
     if (router && router.isReady) {
       const { owner } = router.query;
+      const { username, refresh, access, id } = router.query;
+      let discord, access2, refresh2;
+      let time = sessionStorage.getItem("time");
+      if (time) {
+        const date = new Date(time);
+        if (date.valueOf() > Date.now()) {
+          // only use stored if date is not in future
+          discord = sessionStorage.getItem("discord");
+          access2 = sessionStorage.getItem("discord_access_token");
+          refresh2 = sessionStorage.getItem("discord_refresh_token");
+        } else {
+          sessionStorage.setItem("time", new Date().toString());
+        }
+      }
+      const finalUsername = username && id ? { id, username } : (discord ? JSON.parse(discord) : undefined);
+      const finalAccess = (access || access2) as string;
+      const finalRefresh = (refresh || refresh2) as string;
+      console.log({ finalUsername, finalAccess, finalRefresh });
+      setDiscord(finalUsername);
+      setAccessToken(finalAccess);
+      setRefreshToken(finalRefresh);
       setShowAdminElements(owner === "true");
+      sessionStorage.setItem("discord", finalUsername || "");
+      sessionStorage.setItem("discord_access_token", finalAccess || "");
+      sessionStorage.setItem("discord_refresh_token", finalRefresh || "");
     }
   }, [router, router.isReady]);
   useEffect(() => {
@@ -48,7 +67,6 @@ export default function Home() {
     });
   }, [discord, accessToken]);
   useEffect(() => {
-    console.log(selectedServer);
     if (selectedServer !== undefined && selectedServer !== null) {
       (async () => {
         // add caching maybe
@@ -69,14 +87,6 @@ export default function Home() {
     }
   }, [selectedServer]);
   useEffect(() => {
-    const discord = sessionStorage.getItem("discord");
-    const access = sessionStorage.getItem("discord_access_token");
-    const refresh = sessionStorage.getItem("discord_refresh_token");
-    if (discord) {
-      setDiscord(JSON.parse(discord));
-      setAccessToken(access!);
-      setRefreshToken(refresh!);
-    }
   }, []);
   const connectDiscord = async () => {
     const url = process.env.NEXT_PUBLIC_REDIRECT_URL;
@@ -99,24 +109,40 @@ export default function Home() {
     setServers(servers => [...servers, json]);
   };
   const addTwitter = async () => {
-    if (!twitterAdding || !user || !accessToken) return;
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${user.discordId}/twitter/add`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          twitter: twitterAdding,
-          discordId: user.discordId,
-          access: accessToken
-        })
-      }
-    );
-    if (response.status === 200) {
-      setUser((user: any) => {
-        return { ...user, twitter: twitterAdding };
-      });
-      setAddingTwitter(false);
-    }
+    if (!user) return;
+    const TWITTER_CLIENT_ID = "dmhMQWNITWw3RWd5R2p0OTQwRXg6MTpjaQ"; // give your twitter client id here
+    const rootUrl = "https://twitter.com/i/oauth2/authorize";
+    const options = {
+      redirect_uri: "http://www.localhost:3001/auth/twitter", // client url cannot be http://localhost:3000/ or http://127.0.0.1:3000/
+      client_id: TWITTER_CLIENT_ID,
+      state: user.discordId,
+      response_type: "code",
+      code_challenge: "y_SfRG4BmOES02uqWeIkIgLQAlTBggyf_G7uKT51ku8",
+      code_challenge_method: "S256",
+      scope: ["users.read", "tweet.read", "follows.read", "follows.write"].join(" "), // add/remove scopes as needed
+    };
+    const qs = new URLSearchParams(options).toString();
+    const url = `${rootUrl}?${qs}`;
+    console.log(url);
+    window.open(url, "_blank");
+    // if (!twitterAdding || !user || !accessToken) return;
+    // const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${user.discordId}/twitter/add`,
+    //   {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify({
+    //       twitter: twitterAdding,
+    //       discordId: user.discordId,
+    //       access: accessToken
+    //     })
+    //   }
+    // );
+    // if (response.status === 200) {
+    //   setUser((user: any) => {
+    //     return { ...user, twitter: twitterAdding };
+    //   });
+    //   setAddingTwitter(false);
+    // }
   };
   const removeTwitter = async () => {
     if (!user || !accessToken) return;
@@ -166,7 +192,7 @@ export default function Home() {
           img="/x.png"
           title="Connect X"
           normalText="Connect"
-          normalAction={() => setAddingTwitter(true)}
+          normalAction={user ? addTwitter : undefined}
           success={user && user.twitter}
           successText={user?.twitter}
           hoverSuccessText="Change Twitter"

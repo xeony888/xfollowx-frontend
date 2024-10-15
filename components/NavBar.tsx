@@ -1,4 +1,3 @@
-import WalletButton from "./WalletButton";
 
 
 

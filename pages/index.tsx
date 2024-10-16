@@ -9,6 +9,7 @@ import { useRouter } from "next/router";
 import { redirect } from "next/dist/server/api-utils";
 
 type PaidStatus = "NEVER" | "FUTURE" | "EXPIRED";
+const EXPIRY_TIME = 7 * 24 * 60 * 60 * 1000;
 export default function Home() {
   const [user, setUser] = useState<any>();
   const [addingTwitter, setAddingTwitter] = useState<boolean>(false);
@@ -31,12 +32,14 @@ export default function Home() {
       if (time) {
         const date = new Date(time);
         if (date.valueOf() > Date.now()) {
+          console.log("using stored data");
           // only use stored if date is not in future
           discord = sessionStorage.getItem("discord");
           access2 = sessionStorage.getItem("discord_access_token");
           refresh2 = sessionStorage.getItem("discord_refresh_token");
         } else {
-          sessionStorage.setItem("time", new Date().toString());
+          console.log("Not using stored data");
+          sessionStorage.setItem("time", new Date(Date.now() + EXPIRY_TIME).toString());
         }
       }
       const finalUsername = username && id ? { id, username } : (discord ? JSON.parse(discord) : undefined);
@@ -47,9 +50,10 @@ export default function Home() {
       setAccessToken(finalAccess);
       setRefreshToken(finalRefresh);
       setShowAdminElements(owner === "true");
-      sessionStorage.setItem("discord", finalUsername || "");
+      sessionStorage.setItem("discord", JSON.stringify(finalUsername) || "");
       sessionStorage.setItem("discord_access_token", finalAccess || "");
       sessionStorage.setItem("discord_refresh_token", finalRefresh || "");
+      sessionStorage.setItem("time", new Date(Date.now() + EXPIRY_TIME).toString());
     }
   }, [router, router.isReady]);
   useEffect(() => {

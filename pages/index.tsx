@@ -4,7 +4,6 @@ import { Button3, DeleteButton } from "@/components/Buttons";
 import GradientBorder from "@/components/GradientBorder";
 import StyledInput from "@/components/StyledInput";
 import Toggle from "@/components/Toggle";
-import DropdownActionComponent from "@/components/DropdownActionComponent";
 import { useRouter } from "next/router";
 import { redirect } from "next/dist/server/api-utils";
 
@@ -15,13 +14,10 @@ export default function Home() {
   const [addingTwitter, setAddingTwitter] = useState<boolean>(false);
   const [discord, setDiscord] = useState<any>();
   const [servers, setServers] = useState<any[]>([]);
-  const [selectedServer, setSelectedServer] = useState<any>();
   const [twitterAdding, setTwitterAdding] = useState<string>("");
   const [accessToken, setAccessToken] = useState<string>();
   const [refreshToken, setRefreshToken] = useState<string>();
   const [showAdminElements, setShowAdminElements] = useState<boolean>(false);
-  const [paid, setPaid] = useState<boolean>(false);
-  const [connected, setConnected] = useState<boolean>(false);
   const router = useRouter();
   useEffect(() => {
     if (router && router.isReady) {
@@ -64,53 +60,17 @@ export default function Home() {
         wallet: json.wallet,
         discord: json.discord,
         twitter: json.twitter,
+        days: json.days,
         discordName: json.discordName,
         discordId: json.discordId,
       });
       setServers(json.servers || []);
     });
   }, [discord, accessToken]);
-  useEffect(() => {
-    if (selectedServer !== undefined && selectedServer !== null) {
-      (async () => {
-        // add caching maybe
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/server/${selectedServer.id}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              discordId: user.discordId,
-              access: accessToken
-            })
-          }
-        );
-        const json = await response.json();
-        setPaid(json.subscribed);
-        setConnected(Boolean(json.connectedDiscordServerName));
-      })();
-    }
-  }, [selectedServer]);
-  useEffect(() => {
-  }, []);
   const connectDiscord = async () => {
     const url = process.env.NEXT_PUBLIC_REDIRECT_URL;
     console.log(url);
     window.open(url, "_blank")?.focus();
-  };
-  const createServer = async () => {
-    if (!user || !accessToken) return;
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/server`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          discordId: user.discordId,
-          access: accessToken
-        })
-      }
-    );
-    const json = await response.json();
-    setServers(servers => [...servers, json]);
   };
   const addTwitter = async () => {
     if (!user) return;
@@ -129,42 +89,6 @@ export default function Home() {
     const url = `${rootUrl}?${qs}`;
     console.log(url);
     window.open(url, "_blank");
-    // if (!twitterAdding || !user || !accessToken) return;
-    // const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${user.discordId}/twitter/add`,
-    //   {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({
-    //       twitter: twitterAdding,
-    //       discordId: user.discordId,
-    //       access: accessToken
-    //     })
-    //   }
-    // );
-    // if (response.status === 200) {
-    //   setUser((user: any) => {
-    //     return { ...user, twitter: twitterAdding };
-    //   });
-    //   setAddingTwitter(false);
-    // }
-  };
-  const removeTwitter = async () => {
-    if (!user || !accessToken) return;
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${user.discordId}/twitter/remove`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          access: accessToken,
-          discordId: user.discordId
-        })
-      }
-    );
-    if (response.status === 200) {
-      setUser((user: any) => {
-        return { ...user, twitter: null };
-      });
-    }
   };
   const toggle = (b: boolean) => {
     router.push({
@@ -211,40 +135,37 @@ export default function Home() {
         <>
           <p className="mt-5 text-center">To add the bot to your server, complete the below steps</p>
           <div className="grid grid-cols-1 place-items-center items-center gap-10 md:gap-4 mt-10 mb-5">
-            {/* <ActionComponent
-              img="/discord.png"
-              title="Add Bot to Server"
-              success={false}
-              successText=""
-              normal={true}
-              normalText="Add"
-              normalAction={() => window.open("https://discord.com/oauth2/authorize?client_id=1283409803833507890", "_blank")}
-              failure={false}
-              failureText=""
-            /> */}
-            <DropdownActionComponent
-              img="/key.png"
-              title="Manage Servers"
-              options={servers}
-              onChange={(n: number) => setSelectedServer(n)}
-              action={createServer}
-              paid={paid}
-              connected={connected}
-            />
-            {/* <ActionComponent
-              img="/wallet.png"
-              title="Subscribe"
-              success={paidStatus === "FUTURE"}
-              successText={`Paid until ${toDDMMYYYY(until || new Date())}`}
-              hoverSuccessText="Buy More"
-              successAction={() => setBuyingSolana(true)}
-              normal={paidStatus === "NEVER"}
-              normalText="Pay"
-              normalAction={() => setBuyingSolana(true)}
-              failure={paidStatus === "EXPIRED"}
-              failureText="Pay"
-              failureAction={() => setBuyingSolana(true)}
-            /> */}
+            <div className="relative w-[600px] bg-[#373739] flex flex-col gap-4 justify-center items-center pt-14 pb-2 px-2">
+              <div className="absolute w-20 h-20 rounded-full flex justify-center items-center bg-[#6D654E] left-[50%] top-0 -translate-x-[50%] -translate-y-[50%]">
+                <img src="/key.png" className="w-12" />
+              </div>
+              <p className="font-bold">Manage Servers</p>
+              <div className="flex flex-col justify-center items-center">
+                <p className="text-4xl font-extrabold">{user?.days || 0}</p>
+                <p>days left</p>
+                <p
+                  className="text-primary-dark underline hover:cursor-pointer"
+                  onClick={() => window.open("https://app.hel.io/pay/67110db71b2d8daa30aba1f5", "_blank")}
+                >
+                  Buy More
+                </p>
+              </div>
+
+              {servers && servers.length > 0 ?
+                <>
+                  <p>Your Connected Servers</p>
+                  <div className="grid grid-cols-4 place-items-center items-center">
+                    {servers.map((server) => (
+                      <p className="bg-primary-dark rounded-lg p-2">{server.guildName}</p>
+                    ))}
+                  </div>
+                </>
+
+                :
+                <p className="italic">You have not added the bot to any servers</p>
+              }
+              <Button3 onClick={() => window.open("https://discord.com/oauth2/authorize?client_id=1283409803833507890", "_blank")} text="Add Bot to new Discord Server" />
+            </div>
           </div>
         </>
       }
